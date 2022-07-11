@@ -9,8 +9,8 @@ app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`))
 
 //webhook listener and validator
 app.get("/hook", (req, res) => {
-    if (req.query[challenge]) {
-        console.log(req)
+    console.log(req)
+    if (req.query.challenge) {
         let ChallengeId = req.query.challenge
         res.status(200).send(
             {
