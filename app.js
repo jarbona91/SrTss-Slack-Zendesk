@@ -8,7 +8,7 @@ app.use(bodyParser.json())
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`))
 
 //webhook listener and validator
-app.get("/hook", (req, res) => {
+app.post("/hook", (req, res) => {
     console.log(req)
     if (req.query.challenge) {
         let ChallengeId = req.query.challenge
