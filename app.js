@@ -21,6 +21,7 @@ app.post("/hook", (req, res) => {
         if (req.body.event.reaction === 'white_check_mark') {
             console.log(req.body.event.user)
             console.log(req.body.event.item)
+            getMessage()
         }
         res.status(200).end()
 
@@ -29,3 +30,30 @@ app.post("/hook", (req, res) => {
         res.status(200).end()
     }
 })
+
+
+async function getMessage() {
+    try {
+        let res = await axios({
+             url: `https://slack.com/api/conversations.list`,
+             method: 'get',
+             headers: {
+                 'Content-Type': 'application/json',
+                 'Authorization': process.env.slack_token
+             },
+             data: {
+                "channel": 'C03CHEJAQ3Y',
+                "latest": '1657556477.035489',
+                "limit": 1,
+                "inclusive": true
+              }
+         })
+         if(res.status == 200){
+             console.log(res.status)
+         }     
+         return res.data
+     }
+     catch (err) {
+         console.error(err);
+     }
+}
