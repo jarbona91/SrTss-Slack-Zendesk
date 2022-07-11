@@ -21,7 +21,9 @@ app.post("/hook", (req, res) => {
         if (req.body.event.reaction === 'white_check_mark') {
             console.log(req.body.event.user)
             console.log(req.body.event.item)
-            getMessage()
+            getMessage().then(res => {
+                console.log(res)
+            })
         }
         res.status(200).end()
 
