@@ -19,12 +19,27 @@ app.post("/hook", (req, res) => {
     }
     else if (req.body.event) {
         if (req.body.event.reaction === 'white_check_mark') {
-            console.log(req.body.event)
-            console.log(req.body.event.item)
+            // console.log(req.body.event)
+            // console.log(req.body.event.item)
             let channelId = req.body.event.item.channel
             let messageId = req.body.event.item.ts
-            getMessage(channelId, messageId).then(res => {
-                console.log(res)
+            let tsEmail
+            let userEmail
+            getMessage(channelId, messageId).then(getMessageRes => {
+                console.log(getMessageRes)
+
+                // get Email for TS member who applied emoji
+                getUser(req.body.event.user).then(getUserRes => {
+                    tsEmail = getUserRes.user.profile.email
+                    console.log(tsEmail)
+                })
+
+                // get Email for user who asked question
+                getUser(getMessageRes.messages[0].user).then(getUserRes => {
+                    userEmail = getUserRes.user.profile.email
+                    console.log(userEmail)
+                })
+
             })
         }
         res.status(200).end()
@@ -43,14 +58,27 @@ async function getMessage(channelId, messageId) {
              headers: {
                  'Content-Type': 'application/json',
                  'Authorization': process.env.slack_token
-             },
-            //  data: {
-                
-            //     "channel": "C03CHEJAQ3Y",
-            //     "latest": '1657556477.035489',
-            //     "limit": 1,
-            //     "inclusive": true
-            //   }
+             }
+         })
+         if(res.status == 200){
+             console.log(res.status)
+         }     
+         return res.data
+     }
+     catch (err) {
+         console.error(err);
+     }
+}
+
+async function getUser(userId) {
+    try {
+        let res = await axios({
+             url: `https://slack.com/api/users.info?user=${userId}`,
+             method: 'get',
+             headers: {
+                 'Content-Type': 'application/json',
+                 'Authorization': process.env.slack_token
+             }
          })
          if(res.status == 200){
              console.log(res.status)
