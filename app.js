@@ -19,7 +19,7 @@ app.post("/hook", (req, res) => {
     }
     else if (req.body.event) {
         if (req.body.event.reaction === 'white_check_mark') {
-            console.log(req.body.event.user)
+            console.log(req.body.event)
             console.log(req.body.event.item)
             getMessage().then(res => {
                 console.log(res)
@@ -33,22 +33,27 @@ app.post("/hook", (req, res) => {
     }
 })
 
+getMessage().then(res => {
+    console.log(res)
+})
+
 
 async function getMessage() {
     try {
         let res = await axios({
-             url: `https://slack.com/api/conversations.list`,
+             url: `https://slack.com/api/conversations.history?channel=C03CHEJAQ3Y&latest=1657556477.035489&limit=1&inclusive=true`,
              method: 'get',
              headers: {
                  'Content-Type': 'application/json',
                  'Authorization': process.env.slack_token
              },
-             data: {
-                "channel": 'C03CHEJAQ3Y',
-                "latest": '1657556477.035489',
-                "limit": 1,
-                "inclusive": true
-              }
+            //  data: {
+                
+            //     "channel": "C03CHEJAQ3Y",
+            //     "latest": '1657556477.035489',
+            //     "limit": 1,
+            //     "inclusive": true
+            //   }
          })
          if(res.status == 200){
              console.log(res.status)
