@@ -19,25 +19,23 @@ app.post("/hook", (req, res) => {
     }
     else if (req.body.event) {
         if (req.body.event.reaction === 'white_check_mark') {
-            // console.log(req.body.event)
-            // console.log(req.body.event.item)
             let channelId = req.body.event.item.channel
             let messageId = req.body.event.item.ts
             let tsEmail
             let userEmail
+
+            // get Email for TS member who applied emoji
+            getUser(req.body.event.user).then(getUserRes => {
+                tsEmail = getUserRes.user.profile.email
+            })
+
+            // get more info about the message the emoji was applied to
             getMessage(channelId, messageId).then(getMessageRes => {
                 console.log(getMessageRes)
-
-                // get Email for TS member who applied emoji
-                getUser(req.body.event.user).then(getUserRes => {
-                    tsEmail = getUserRes.user.profile.email
-                    console.log(tsEmail)
-                })
-
                 // get Email for user who asked question
                 getUser(getMessageRes.messages[0].user).then(getUserRes => {
                     userEmail = getUserRes.user.profile.email
-                    console.log(userEmail)
+                    // postTicket(tsEmail, userEmail)
                 })
 
             })
@@ -57,7 +55,7 @@ async function getMessage(channelId, messageId) {
              method: 'get',
              headers: {
                  'Content-Type': 'application/json',
-                 'Authorization': process.env.slack_token
+                 'Authorization': "Bearer " + process.env.slack_token
              }
          })
          if(res.status == 200){
@@ -79,6 +77,40 @@ async function getUser(userId) {
                  'Content-Type': 'application/json',
                  'Authorization': process.env.slack_token
              }
+         })
+         if(res.status == 200){
+             console.log(res.status)
+         }     
+         return res.data
+     }
+     catch (err) {
+         console.error(err);
+     }
+}
+
+async function postTicket(tsEmail, userEmail) {
+    try {
+        let res = await axios({
+             url: `https://clickup.zendesk.com/api/v2/tickets`,
+             method: 'post',
+             headers: {
+                 'Content-Type': 'application/json',
+                 'Authorization': "Bearer " + process.env.zendesk_token
+             },
+             data: {
+                "ticket": {
+                    "comment": {
+                        "body": "The smoke is very colorful.",
+                        "public": "false",
+                    },
+                    "priority": "normal",
+                    "subject": "Product Questions - Internal",
+                    "tags": ["no_csat"],
+                    "status": "open",
+                    "assignee_email": tsEmail,
+                    "requester": userEmail,
+                }
+            }
          })
          if(res.status == 200){
              console.log(res.status)
