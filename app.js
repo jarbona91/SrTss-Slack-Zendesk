@@ -21,7 +21,9 @@ app.post("/hook", (req, res) => {
         if (req.body.event.reaction === 'white_check_mark') {
             console.log(req.body.event)
             console.log(req.body.event.item)
-            getMessage().then(res => {
+            let channelId = req.body.event.item.channel
+            let messageId = req.body.event.item.ts
+            getMessage(channelId, messageId).then(res => {
                 console.log(res)
             })
         }
@@ -33,15 +35,10 @@ app.post("/hook", (req, res) => {
     }
 })
 
-getMessage().then(res => {
-    console.log(res)
-})
-
-
-async function getMessage() {
+async function getMessage(channelId, messageId) {
     try {
         let res = await axios({
-             url: `https://slack.com/api/conversations.history?channel=C03CHEJAQ3Y&latest=1657556477.035489&limit=1&inclusive=true`,
+             url: `https://slack.com/api/conversations.history?channel=${channelId}&latest=${messageId}&limit=1&inclusive=true`,
              method: 'get',
              headers: {
                  'Content-Type': 'application/json',
