@@ -26,7 +26,6 @@ app.post("/hook", (req, res) => {
 
             // get Email for TS member who applied emoji
             getUser(req.body.event.user).then(getTsUserRes => {
-                console.log(getTsUserRes)
                 tsEmail = getTsUserRes.user.profile.email
             })
 
@@ -76,7 +75,7 @@ async function getUser(userId) {
              method: 'get',
              headers: {
                  'Content-Type': 'application/json',
-                 'Authorization': process.env.slack_token
+                 'Authorization': "Bearer " + process.env.slack_token
              }
          })
          if(res.status == 200){
