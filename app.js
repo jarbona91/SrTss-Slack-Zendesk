@@ -25,8 +25,9 @@ app.post("/hook", (req, res) => {
             let userEmail
 
             // get Email for TS member who applied emoji
-            getUser(req.body.event.user).then(getUserRes => {
-                tsEmail = getUserRes.user.profile.email
+            getUser(req.body.event.user).then(getTsUserRes => {
+                console.log(getTsUserRes)
+                tsEmail = getTsUserRes.user.profile.email
             })
 
             // get more info about the message the emoji was applied to
