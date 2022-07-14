@@ -21,6 +21,8 @@ app.post("/hook", (req, res) => {
         if (req.body.event.reaction === 'white_check_mark') {
             let channelId = req.body.event.item.channel
             let messageId = req.body.event.item.ts
+            console.log(channelId)
+            console.log(messageId)
             let tsEmail
             let userEmail
 
@@ -32,7 +34,6 @@ app.post("/hook", (req, res) => {
             // get more info about the message the emoji was applied to
             getMessage(channelId, messageId).then(getMessageRes => {
                 console.log(getMessageRes)
-                console.log(getMessageRes.messages[0].blocks)
                 let textConversation = getMessageRes.messages[0].text
                 // get Email for user who asked question
                 getUser(getMessageRes.messages[0].user).then(getUserRes => {
