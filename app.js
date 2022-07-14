@@ -30,7 +30,7 @@ app.post("/hook", (req, res) => {
             getUser(req.body.event.user).then(getTsUserRes => {
 
                 // List of Sr TSS emails. If adding or removing Sr TSS, do it here
-                let emailList = ['pvatterott@clickup.com', 'gbarnes@clickup.com', 'ibuthelezi@clickup.com', 'mwester@clickup.com', 'mmontgomery@clickup.com', 'namaral@clickup.com', 'shaq@clickup.com']
+                let emailList = ['pvatterott@clickup.com', 'gbarnes@clickup.com', 'ibuthelezi@clickup.com', 'mwester@clickup.com', 'mmontgomery@clickup.com', 'namaral@clickup.com', 'shaq@clickup.com', 'pvatt256@gmail.com']
                 tsEmail = getTsUserRes.user.profile.email
 
                 // checks if the user who set the emoji is a Sr. TSS
