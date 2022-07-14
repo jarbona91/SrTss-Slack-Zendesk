@@ -21,8 +21,8 @@ app.post("/hook", (req, res) => {
         if (req.body.event.reaction === 'white_check_mark') {
             let channelId = req.body.event.item.channel
             let messageId = req.body.event.item.ts
-            let channelIdURL = channelId.split('.').join("")
-            let slackURL = `https://click-up.slack.com/archives/${channelId}/p${channelIdURL}`
+            let messageIdURL = messageId.split('.').join("")
+            let slackURL = `https://click-up.slack.com/archives/${channelId}/p${messageIdURL}`
             console.log(channelId)
             console.log(messageId)
             let tsEmail
@@ -35,7 +35,6 @@ app.post("/hook", (req, res) => {
 
             // get more info about the message the emoji was applied to
             getMessage(channelId, messageId).then(getMessageRes => {
-                console.log(getMessageRes)
                 let textConversation = getMessageRes.messages[0].text
                 // get Email for user who asked question
                 getUser(getMessageRes.messages[0].user).then(getUserRes => {
