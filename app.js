@@ -32,10 +32,12 @@ app.post("/hook", (req, res) => {
             // get more info about the message the emoji was applied to
             getMessage(channelId, messageId).then(getMessageRes => {
                 console.log(getMessageRes)
+                console.log(getMessageRes.messages[0].blocks)
+                let textConversation = getMessageRes.messages[0].text
                 // get Email for user who asked question
                 getUser(getMessageRes.messages[0].user).then(getUserRes => {
                     userEmail = getUserRes.user.profile.email
-                    // postTicket(tsEmail, userEmail)
+                    // postTicket(tsEmail, userEmail, textConversation)
                 })
 
             })
@@ -88,7 +90,7 @@ async function getUser(userId) {
      }
 }
 
-async function postTicket(tsEmail, userEmail) {
+async function postTicket(tsEmail, userEmail, textConversation) {
     try {
         let res = await axios({
              url: `https://clickup.zendesk.com/api/v2/tickets`,
@@ -100,7 +102,7 @@ async function postTicket(tsEmail, userEmail) {
              data: {
                 "ticket": {
                     "comment": {
-                        "body": "The smoke is very colorful.",
+                        "body": textConversation,
                         "public": "false",
                     },
                     "priority": "normal",
