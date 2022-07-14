@@ -21,6 +21,8 @@ app.post("/hook", (req, res) => {
         if (req.body.event.reaction === 'white_check_mark') {
             let channelId = req.body.event.item.channel
             let messageId = req.body.event.item.ts
+            let channelIdURL = channelId.split('.').join("")
+            let slackURL = `https://click-up.slack.com/archives/${channelId}/p${channelIdURL}`
             console.log(channelId)
             console.log(messageId)
             let tsEmail
@@ -38,7 +40,9 @@ app.post("/hook", (req, res) => {
                 // get Email for user who asked question
                 getUser(getMessageRes.messages[0].user).then(getUserRes => {
                     userEmail = getUserRes.user.profile.email
-                    // postTicket(tsEmail, userEmail, textConversation)
+                    postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                        console.log(postTicketRes)
+                    })
                 })
 
             })
@@ -91,7 +95,26 @@ async function getUser(userId) {
      }
 }
 
-async function postTicket(tsEmail, userEmail, textConversation) {
+async function postTicket(tsEmail, userEmail, textConversation, slackURL) {
+
+    let data = {
+        "ticket": {
+            "comment": {
+                "body": textConversation + " " + slackURL,
+                "public": "false",
+            },
+            "priority": "normal",
+            "subject": "Product Questions - Internal",
+            "tags": ["no_csat"],
+            "status": "open",
+            "assignee_email": tsEmail,
+            "requester": userEmail,
+        }
+    }
+    return data
+
+
+
     try {
         let res = await axios({
              url: `https://clickup.zendesk.com/api/v2/tickets`,
@@ -103,7 +126,7 @@ async function postTicket(tsEmail, userEmail, textConversation) {
              data: {
                 "ticket": {
                     "comment": {
-                        "body": textConversation,
+                        "body": textConversation + " " + slackURL,
                         "public": "false",
                     },
                     "priority": "normal",
