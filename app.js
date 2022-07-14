@@ -9,6 +9,8 @@ app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`))
 
 //webhook listener and validator
 app.post("/hook", (req, res) => {
+
+    // initial webhook validator. Only runs when setting up the webhook from Slack
     if (req.body.challenge) {
         let ChallengeId = req.body.challenge
         res.status(200).send(
@@ -17,6 +19,8 @@ app.post("/hook", (req, res) => {
             }
         )
     }
+
+    // checking if webhook includes an event. Then, if the event is the application of the key emoji
     else if (req.body.event) {
         if (req.body.event.reaction === 'sr-tss-ticket-maker') {
             let channelId = req.body.event.item.channel
@@ -65,53 +69,53 @@ app.post("/hook", (req, res) => {
 async function getMessage(channelId, messageId) {
     try {
         let res = await axios({
-             url: `https://slack.com/api/conversations.history?channel=${channelId}&latest=${messageId}&limit=1&inclusive=true`,
-             method: 'get',
-             headers: {
-                 'Content-Type': 'application/json',
-                 'Authorization': "Bearer " + process.env.slack_token
-             }
-         })
-         if(res.status == 200){
-             console.log(res.status)
-         }     
-         return res.data
-     }
-     catch (err) {
-         console.error(err);
-     }
+            url: `https://slack.com/api/conversations.history?channel=${channelId}&latest=${messageId}&limit=1&inclusive=true`,
+            method: 'get',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': "Bearer " + process.env.slack_token
+            }
+        })
+        if (res.status == 200) {
+            console.log(res.status)
+        }
+        return res.data
+    }
+    catch (err) {
+        console.error(err);
+    }
 }
 
 async function getUser(userId) {
     try {
         let res = await axios({
-             url: `https://slack.com/api/users.info?user=${userId}`,
-             method: 'get',
-             headers: {
-                 'Content-Type': 'application/json',
-                 'Authorization': "Bearer " + process.env.slack_token
-             }
-         })
-         if(res.status == 200){
-             console.log(res.status)
-         }     
-         return res.data
-     }
-     catch (err) {
-         console.error(err);
-     }
+            url: `https://slack.com/api/users.info?user=${userId}`,
+            method: 'get',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': "Bearer " + process.env.slack_token
+            }
+        })
+        if (res.status == 200) {
+            console.log(res.status)
+        }
+        return res.data
+    }
+    catch (err) {
+        console.error(err);
+    }
 }
 
 async function postTicket(tsEmail, userEmail, textConversation, slackURL) {
     try {
         let res = await axios({
-             url: `https://clickup.zendesk.com/api/v2/tickets`,
-             method: 'post',
-             headers: {
-                 'Content-Type': 'application/json',
-                 'Authorization': "Bearer " + process.env.zendesk_token
-             },
-             data: {
+            url: `https://clickup.zendesk.com/api/v2/tickets`,
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': "Bearer " + process.env.zendesk_token
+            },
+            data: {
                 "ticket": {
                     "comment": {
                         "body": textConversation + " " + slackURL,
@@ -125,13 +129,13 @@ async function postTicket(tsEmail, userEmail, textConversation, slackURL) {
                     "requester": userEmail,
                 }
             }
-         })
-         if(res.status == 200){
-             console.log(res.status)
-         }     
-         return res.data
-     }
-     catch (err) {
-         console.error(err);
-     }
+        })
+        if (res.status == 200) {
+            console.log(res.status)
+        }
+        return res.data
+    }
+    catch (err) {
+        console.error(err);
+    }
 }
