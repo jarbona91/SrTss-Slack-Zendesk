@@ -23,28 +23,32 @@ app.post("/hook", (req, res) => {
             let messageId = req.body.event.item.ts
             let messageIdURL = messageId.split('.').join("")
             let slackURL = `https://click-up.slack.com/archives/${channelId}/p${messageIdURL}`
-            console.log(channelId)
-            console.log(messageId)
             let tsEmail
             let userEmail
 
             // get Email for TS member who applied emoji
             getUser(req.body.event.user).then(getTsUserRes => {
+                // List of Sr TSS emails. If adding or removing Sr TSS, do it here
+                let emailList = ['pvatterott@clickup.com', 'gbarnes@clickup.com', 'ibuthelezi@clickup.com', 'mwester@clickup.com', 'mmontgomery@clickup.com', 'namaral@clickup.com', 'shaq@clickup.com', 'pvatt256@gmail.com']
                 tsEmail = getTsUserRes.user.profile.email
-            })
 
-            // get more info about the message the emoji was applied to
-            getMessage(channelId, messageId).then(getMessageRes => {
-                let textConversation = getMessageRes.messages[0].text
-                // get Email for user who asked question
-                getUser(getMessageRes.messages[0].user).then(getUserRes => {
-                    userEmail = getUserRes.user.profile.email
-                    postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
-                        console.log(postTicketRes)
+                // checks if the user who set the emoji is a Sr. TSS
+                if (emailList.includes(tsEmail)) {
+                    console.log('worked')
+                    // get more info about the message the emoji was applied to
+                    getMessage(channelId, messageId).then(getMessageRes => {
+                        let textConversation = getMessageRes.messages[0].text
+                        // get Email for user who asked question
+                        getUser(getMessageRes.messages[0].user).then(getUserRes => {
+                            userEmail = getUserRes.user.profile.email
+                            postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                                console.log(postTicketRes)
+                            })
+                        })
                     })
-                })
-
+                }
             })
+
         }
         res.status(200).end()
 
