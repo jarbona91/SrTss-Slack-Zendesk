@@ -18,7 +18,7 @@ app.post("/hook", (req, res) => {
         )
     }
     else if (req.body.event) {
-        if (req.body.event.reaction === 'white_check_mark') {
+        if (req.body.event.reaction === 'sr-tss-ticket-maker') {
             let channelId = req.body.event.item.channel
             let messageId = req.body.event.item.ts
             let messageIdURL = messageId.split('.').join("")
@@ -28,7 +28,7 @@ app.post("/hook", (req, res) => {
 
             // get Email for TS member who applied emoji
             getUser(req.body.event.user).then(getTsUserRes => {
-                
+
                 // List of Sr TSS emails. If adding or removing Sr TSS, do it here
                 let emailList = ['pvatterott@clickup.com', 'gbarnes@clickup.com', 'ibuthelezi@clickup.com', 'mwester@clickup.com', 'mmontgomery@clickup.com', 'namaral@clickup.com', 'shaq@clickup.com']
                 tsEmail = getTsUserRes.user.profile.email
@@ -103,35 +103,38 @@ async function getUser(userId) {
 }
 
 async function postTicket(tsEmail, userEmail, textConversation, slackURL) {
-    try {
-        let res = await axios({
-             url: `https://clickup.zendesk.com/api/v2/tickets`,
-             method: 'post',
-             headers: {
-                 'Content-Type': 'application/json',
-                 'Authorization': "Bearer " + process.env.zendesk_token
-             },
-             data: {
-                "ticket": {
-                    "comment": {
-                        "body": textConversation + " " + slackURL,
-                        "public": "false",
-                    },
-                    "priority": "normal",
-                    "subject": "Product Questions - Internal",
-                    "tags": ["no_csat"],
-                    "status": "open",
-                    "assignee_email": tsEmail,
-                    "requester": userEmail,
-                }
-            }
-         })
-         if(res.status == 200){
-             console.log(res.status)
-         }     
-         return res.data
-     }
-     catch (err) {
-         console.error(err);
-     }
+
+
+    console.log('success')
+    // try {
+    //     let res = await axios({
+    //          url: `https://clickup.zendesk.com/api/v2/tickets`,
+    //          method: 'post',
+    //          headers: {
+    //              'Content-Type': 'application/json',
+    //              'Authorization': "Bearer " + process.env.zendesk_token
+    //          },
+    //          data: {
+    //             "ticket": {
+    //                 "comment": {
+    //                     "body": textConversation + " " + slackURL,
+    //                     "public": "false",
+    //                 },
+    //                 "priority": "normal",
+    //                 "subject": "Product Questions - Internal",
+    //                 "tags": ["no_csat"],
+    //                 "status": "open",
+    //                 "assignee_email": tsEmail,
+    //                 "requester": userEmail,
+    //             }
+    //         }
+    //      })
+    //      if(res.status == 200){
+    //          console.log(res.status)
+    //      }     
+    //      return res.data
+    //  }
+    //  catch (err) {
+    //      console.error(err);
+    //  }
 }
