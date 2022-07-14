@@ -28,19 +28,23 @@ app.post("/hook", (req, res) => {
 
             // get Email for TS member who applied emoji
             getUser(req.body.event.user).then(getTsUserRes => {
+                
                 // List of Sr TSS emails. If adding or removing Sr TSS, do it here
                 let emailList = ['pvatterott@clickup.com', 'gbarnes@clickup.com', 'ibuthelezi@clickup.com', 'mwester@clickup.com', 'mmontgomery@clickup.com', 'namaral@clickup.com', 'shaq@clickup.com']
                 tsEmail = getTsUserRes.user.profile.email
 
                 // checks if the user who set the emoji is a Sr. TSS
                 if (emailList.includes(tsEmail)) {
-                    console.log('worked')
+
                     // get more info about the message the emoji was applied to
                     getMessage(channelId, messageId).then(getMessageRes => {
                         let textConversation = getMessageRes.messages[0].text
+
                         // get Email for user who asked question
                         getUser(getMessageRes.messages[0].user).then(getUserRes => {
                             userEmail = getUserRes.user.profile.email
+
+                            // post ticket to Zendesk
                             postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
                                 console.log(postTicketRes)
                             })
@@ -99,25 +103,6 @@ async function getUser(userId) {
 }
 
 async function postTicket(tsEmail, userEmail, textConversation, slackURL) {
-
-    let data = {
-        "ticket": {
-            "comment": {
-                "body": textConversation + " " + slackURL,
-                "public": "false",
-            },
-            "priority": "normal",
-            "subject": "Product Questions - Internal",
-            "tags": ["no_csat"],
-            "status": "open",
-            "assignee_email": tsEmail,
-            "requester": userEmail,
-        }
-    }
-    return data
-
-
-
     try {
         let res = await axios({
              url: `https://clickup.zendesk.com/api/v2/tickets`,
