@@ -107,24 +107,6 @@ async function getUser(userId) {
 }
 
 async function postTicket(tsEmail, userEmail, textConversation, slackURL) {
-
-    let data =  {
-        "ticket": {
-            "comment": {
-                "body": textConversation + " " + slackURL,
-                "public": "false",
-            },
-            "priority": "normal",
-            "subject": "Product Questions - Internal",
-            "tags": ["no_csat"],
-            "status": "open",
-            "assignee_email": tsEmail,
-            "requester": userEmail,
-        }
-    }
-
-    return data
-
     try {
         let res = await axios({
             url: `https://clickup.zendesk.com/api/v2/tickets`,
