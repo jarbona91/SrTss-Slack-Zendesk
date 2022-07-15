@@ -23,6 +23,8 @@ app.post("/hook", (req, res) => {
     // checking if webhook includes an event. Then, if the event is the application of the key emoji
     else if (req.body.event) {
         if (req.body.event.reaction === 'sr-tss-ticket-maker') {
+            console.log(req.body.event)
+            console.log(req.body)
             let channelId = req.body.event.item.channel
             let messageId = req.body.event.item.ts
             let messageIdURL = messageId.split('.').join("")
