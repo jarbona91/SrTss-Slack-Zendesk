@@ -533,3 +533,5 @@ node_modules/vary/package.json
 node_modules/vary/README.md
 .env
 .env
+node_modules/.bin/mime.cmd
+node_modules/.bin/mime.ps1
