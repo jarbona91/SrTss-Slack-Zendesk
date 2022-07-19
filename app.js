@@ -49,16 +49,17 @@ app.post("/hook", (req, res) => {
                         if (getMessageRes.messages[0].user === 'U02SJ2ZKA4W') {
                             let userNameWithColon = textConversation.split(' ').slice(0, 2).join(' ');
                             let userName = userNameWithColon.slice(0, -1)
+                            let checker = false
                             getAllUsers().then(getAllUsersRes => {
-                                console.log(getAllUsersRes)
                                 for (let i = 0; i < getAllUsersRes.members.length; i++) {
                                     if (getAllUsersRes.members[i].real_name === userName) {
+                                        checker = true
                                         let userEmail = getAllUsersRes.members[i].profile.email
                                         postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
                                         })
                                     }
                                     // if no results found, set Jake Bowen as assignee
-                                    else if (i === getAllUsersRes.members.length - 1) {
+                                    else if ((i === getAllUsersRes.members.length - 1) && (checker === false)) {
                                         getUser(getMessageRes.messages[0].user).then(getUserRes => {
                                             userEmail = getUserRes.user.profile.email
             
