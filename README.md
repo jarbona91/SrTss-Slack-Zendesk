@@ -15,9 +15,9 @@ This app is deployed on Heroku.
 - [ExpressJS](https://expressjs.com/)
 - [Axios](https://axios-http.com/)
 
-## Starting the app locally
+# Starting the app locally
 
-Start by installing front and backend dependencies. While in this directory, run the following command:
+Start by installing dependencies. While in this directory, run the following command:
 
 ```
 npm install
@@ -31,7 +31,49 @@ After both installations complete, run the following command in your terminal:
 node app.js
 ```
 
-Your app should now be running on <http://localhost:3000>. The Express server should intercept any AJAX requests from the client.
+Your app should now be running on <http://localhost:3000>.
+
+# Running on Heroku
+
+Once you have an application created on Heroku, sync it with your Github repo and deploy.
+
+You will need to add the Slack and Zendesk access tokens. To do this, go to settings then click on Reveal Config Vars.
+
+There, you need to add two variables. The key for the Slack token is:
+```
+slack_token
+```
+See below in the 'Setting up the Slack App' section for more information on how to get this.
+
+The key for the Zendesk token is:
+```
+zendesk_token
+```
+Make sure to save! You should then redeploy the application to make sure everything is up to date.
+
+# Setting up the Slack App
+
+For this to work, a Slack App needs to be created.
+
+One part of the App is to subscribe to the reaction_added event. The Request URL would be the following:
+```
+https://{your_heroku_app}.herokuapp.com/hook
+```
+
+You will also need the User OAuth Token for the App which is the one that starts with ```xoxp-```
+
+Lastly, you need the App to have the following User Token Scopes:
+```
+channels:history
+reactions:read
+users:read
+users:read:email
+```
+
+# Adding or Removing Sr TSS members
+
+In app.js, look for the emailList variable. It should be an array. There, you can add or remove Sr. TSS Emails.
+
 
 ---
 
