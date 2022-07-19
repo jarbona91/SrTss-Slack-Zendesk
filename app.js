@@ -35,14 +35,14 @@ app.post("/hook", (req, res) => {
             let userEmail
 
             // get Email for TS member who applied emoji
-            getUser(req.body.event.user).then(getTsUserRes => {
+            getUser(req.body.event.user, process.env.slack_token).then(getTsUserRes => {
                 tsEmail = getTsUserRes.user.profile.email
 
                 // checks if the user who set the emoji is a Sr. TSS
                 if (emailList.includes(tsEmail)) {
 
                     // get more info about the message the emoji was applied to
-                    getMessage(channelId, messageId).then(getMessageRes => {
+                    getMessage(channelId, messageId, process.env.slack_token).then(getMessageRes => {
                         let textConversation = getMessageRes.messages[0].text
 
                         // if it's a zendesk post, we need to search through the text for the name of the person who posted it. Then, do list all users in the WS. After that, for loop through the list of all users to find the correct one. From there, pull email address and proceed as normal
@@ -61,7 +61,7 @@ app.post("/hook", (req, res) => {
                                     }
                                     // if no results found, set Jake Bowen as assignee
                                     else if ((i === getAllUsersRes.members.length - 1) && (checker === false)) {
-                                        getUser(getMessageRes.messages[0].user).then(getUserRes => {
+                                        getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
                                             userEmail = getUserRes.user.profile.email
             
                                             // post ticket to Zendesk
@@ -74,9 +74,10 @@ app.post("/hook", (req, res) => {
                             })
                         }
 
+                        // if post is not a zendesk side convo
                         else {
                             // get Email for user who asked question
-                            getUser(getMessageRes.messages[0].user).then(getUserRes => {
+                            getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
                                 userEmail = getUserRes.user.profile.email
 
                                 // post ticket to Zendesk
@@ -88,7 +89,6 @@ app.post("/hook", (req, res) => {
                     })
                 }
             })
-
         }
         res.status(200).end()
 
@@ -123,18 +123,18 @@ app.post("/combinehook", (req, res) => {
             let userEmail
 
             // get Email for TS member who applied emoji
-            getUser(req.body.event.user).then(getTsUserRes => {
+            getUser(req.body.event.user, process.env.combine_slack_token).then(getTsUserRes => {
                 tsEmail = getTsUserRes.user.profile.email
 
                 // checks if the user who set the emoji is a Sr. TSS
                 if (emailList.includes(tsEmail)) {
 
                     // get more info about the message the emoji was applied to
-                    getMessage(channelId, messageId).then(getMessageRes => {
+                    getMessage(channelId, messageId, process.env.combine_slack_token).then(getMessageRes => {
                         let textConversation = getMessageRes.messages[0].text
 
                         // get Email for user who asked question
-                        getUser(getMessageRes.messages[0].user).then(getUserRes => {
+                        getUser(getMessageRes.messages[0].user, process.env.combine_slack_token).then(getUserRes => {
                             userEmail = getUserRes.user.profile.email
 
                             // post ticket to Zendesk
@@ -155,14 +155,14 @@ app.post("/combinehook", (req, res) => {
 })
 
 
-async function getMessage(channelId, messageId) {
+async function getMessage(channelId, messageId, token) {
     try {
         let res = await axios({
             url: `https://slack.com/api/conversations.history?channel=${channelId}&latest=${messageId}&limit=1&inclusive=true`,
             method: 'get',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': "Bearer " + process.env.slack_token
+                'Authorization': "Bearer " + token
             }
         })
         if (res.status == 200) {
@@ -175,14 +175,14 @@ async function getMessage(channelId, messageId) {
     }
 }
 
-async function getUser(userId) {
+async function getUser(userId, token) {
     try {
         let res = await axios({
             url: `https://slack.com/api/users.info?user=${userId}`,
             method: 'get',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': "Bearer " + process.env.slack_token
+                'Authorization': "Bearer " + token
             }
         })
         if (res.status == 200) {
