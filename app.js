@@ -7,7 +7,11 @@ require('dotenv').config();
 app.use(bodyParser.json())
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`))
 
-//webhook listener and validator
+// List of Sr TSS emails. If adding or removing Sr TSS, do it here
+let emailList = ['pvatterott@clickup.com', 'gbarnes@clickup.com', 'ibuthelezi@clickup.com', 'mwester@clickup.com', 'mmontgomery@clickup.com', 'namaral@clickup.com', 'shaq@clickup.com', 'bhoover@clickup.com', 'rkendig@clickup.com']
+
+
+//webhook listener and validator for CU Slack Channel
 app.post("/hook", (req, res) => {
 
     // initial webhook validator. Only runs when setting up the webhook from Slack
@@ -32,9 +36,6 @@ app.post("/hook", (req, res) => {
 
             // get Email for TS member who applied emoji
             getUser(req.body.event.user).then(getTsUserRes => {
-
-                // List of Sr TSS emails. If adding or removing Sr TSS, do it here
-                let emailList = ['pvatterott@clickup.com', 'gbarnes@clickup.com', 'ibuthelezi@clickup.com', 'mwester@clickup.com', 'mmontgomery@clickup.com', 'namaral@clickup.com', 'shaq@clickup.com', 'bhoover@clickup.com', 'rkendig@clickup.com']
                 tsEmail = getTsUserRes.user.profile.email
 
                 // checks if the user who set the emoji is a Sr. TSS
@@ -96,6 +97,63 @@ app.post("/hook", (req, res) => {
         res.status(200).end()
     }
 })
+
+
+// Flow for the CU Combine
+app.post("/combinehook", (req, res) => {
+
+    // initial webhook validator. Only runs when setting up the webhook from Slack
+    if (req.body.challenge) {
+        let ChallengeId = req.body.challenge
+        res.status(200).send(
+            {
+                'challenge': ChallengeId
+            }
+        )
+    }
+
+    // checking if webhook includes an event. Then, if the event is the application of the key emoji
+    else if (req.body.event) {
+        if (req.body.event.reaction === 'white_check_mark') {
+            let channelId = req.body.event.item.channel
+            let messageId = req.body.event.item.ts
+            let messageIdURL = messageId.split('.').join("")
+            let slackURL = `https://clickupcombine.slack.com/archives/${channelId}/p${messageIdURL}`
+            let tsEmail
+            let userEmail
+
+            // get Email for TS member who applied emoji
+            getUser(req.body.event.user).then(getTsUserRes => {
+                tsEmail = getTsUserRes.user.profile.email
+
+                // checks if the user who set the emoji is a Sr. TSS
+                if (emailList.includes(tsEmail)) {
+
+                    // get more info about the message the emoji was applied to
+                    getMessage(channelId, messageId).then(getMessageRes => {
+                        let textConversation = getMessageRes.messages[0].text
+
+                        // get Email for user who asked question
+                        getUser(getMessageRes.messages[0].user).then(getUserRes => {
+                            userEmail = getUserRes.user.profile.email
+
+                            // post ticket to Zendesk
+                            postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                                
+                            })
+                        })
+                    })
+                }
+            })
+
+        }
+        res.status(200).end()
+    }
+    else {
+        res.status(200).end()
+    }
+})
+
 
 async function getMessage(channelId, messageId) {
     try {
