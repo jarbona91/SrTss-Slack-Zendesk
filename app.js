@@ -42,10 +42,7 @@ app.post("/hook", (req, res) => {
 
                     // get more info about the message the emoji was applied to
                     getMessage(channelId, messageId).then(getMessageRes => {
-                        console.log(getMessageRes)
-                        console.log(getMessageRes.messages[0])
                         let textConversation = getMessageRes.messages[0].text
-
 
                         // if it's a zendesk post, we need to search through the text for the name of the person who posted it. Then, do list all users in the WS. After that, for loop through the list of all users to find the correct one. From there, pull email address and proceed as normal
                         // if no email address is found, it will simply be assigned to Jake Bowen
