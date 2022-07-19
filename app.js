@@ -42,6 +42,8 @@ app.post("/hook", (req, res) => {
 
                     // get more info about the message the emoji was applied to
                     getMessage(channelId, messageId).then(getMessageRes => {
+                        console.log(getMessageRes)
+                        console.log(getMessageRes.messages[0])
                         let textConversation = getMessageRes.messages[0].text
 
                         // get Email for user who asked question
@@ -50,7 +52,7 @@ app.post("/hook", (req, res) => {
 
                             // post ticket to Zendesk
                             postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
-                                console.log(postTicketRes)
+                                
                             })
                         })
                     })
@@ -122,7 +124,7 @@ async function postTicket(tsEmail, userEmail, textConversation, slackURL) {
                         "public": "false",
                     },
                     "priority": "normal",
-                    "subject": "Product Questions - Internal",
+                    "subject": "Sr TSS Slack - Internal",
                     "tags": ["no_csat"],
                     "status": "open",
                     "assignee_email": tsEmail,
