@@ -61,13 +61,13 @@ app.post("/hook", (req, res) => {
                             if (allSlackUsers.length === 0) {
                                 getAllSlackUsers().then(res => {
                                     for (let i = 0; i < allSlackUsers.length; i++) {
-                                        if (allSlackUsers.members[i].real_name === userName) {
+                                        if (allSlackUsers[i].real_name === userName) {
                                             checker = true
-                                            let userEmail = allSlackUsers.members[i].profile.email
+                                            let userEmail = allSlackUsers[i].profile.email
                                             postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
                                             })
                                         }
-                                        else if ((i === allSlackUsers.members.length - 1) && (checker === false)) {
+                                        else if ((i === allSlackUsers.length - 1) && (checker === false)) {
                                             getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
                                                 userEmail = getUserRes.user.profile.email
                 
@@ -84,15 +84,15 @@ app.post("/hook", (req, res) => {
                             // if all users array is not empty
                             else {
                                 for (let i = 0; i < allSlackUsers.length; i++) {
-                                    if (allSlackUsers.members[i].real_name === userName) {
+                                    if (allSlackUsers[i].real_name === userName) {
                                         checker = true
-                                        let userEmail = allSlackUsers.members[i].profile.email
+                                        let userEmail = allSlackUsers[i].profile.email
                                         postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
                                         })
                                     }
 
                                     // if not able to find a result, recreate the Slack users array. This is if there's a new user of the Slack WS. If that doesnt help, then set Jake Bowen as assignee
-                                    else if ((i === allSlackUsers.members.length - 1) && (checker === false)) {
+                                    else if ((i === allSlackUsers.length - 1) && (checker === false)) {
                                        getAllSlackUsers()
                                        getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
                                         userEmail = getUserRes.user.profile.email
