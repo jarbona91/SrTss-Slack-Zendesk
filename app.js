@@ -51,7 +51,7 @@ app.post("/hook", (req, res) => {
                         console.log(getMessageRes.messages[0])
 
                         // if it's a zendesk post, we need to search through the text for the name of the person who posted it. Then, do list all users in the WS. After that, for loop through the list of all users to find the correct one. From there, pull email address and proceed as normal
-                        // if no email address is found, it will simply be assigned to Jake Bowen
+                        // if no email address is found, it will simply be assigned to Jake Bowen after recreating the slack user array
                         if (getMessageRes.messages[0].user === 'U02SJ2ZKA4W') {
                             let userNameWithColon = textConversation.split(' ').slice(0, 2).join(' ');
                             let userName = userNameWithColon.slice(0, -1)
@@ -59,7 +59,7 @@ app.post("/hook", (req, res) => {
                             
                             // if allSlackUsers array is empty (should only occur during first run) then get all slack members
                             if (allSlackUsers.length === 0) {
-                                getAllSlackUsers.then(res => {
+                                getAllSlackUsers().then(res => {
                                     for (let i = 0; i < allSlackUsers.length; i++) {
                                         if (allSlackUsers.members[i].real_name === userName) {
                                             checker = true
