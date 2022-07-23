@@ -10,6 +10,9 @@ app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`))
 // List of Sr TSS emails. If adding or removing Sr TSS, do it here
 let emailList = ['pvatterott@clickup.com', 'gbarnes@clickup.com', 'ibuthelezi@clickup.com', 'mwester@clickup.com', 'mmontgomery@clickup.com', 'namaral@clickup.com', 'shaq@clickup.com', 'bhoover@clickup.com', 'rkendig@clickup.com']
 
+// List of all Slack Users. This is used when the Slack post is from a ZD ticket
+let allSlackUsers = []
+
 
 //webhook listener and validator for CU Slack Channel
 app.post("/hook", (req, res) => {
@@ -53,27 +56,79 @@ app.post("/hook", (req, res) => {
                             let userNameWithColon = textConversation.split(' ').slice(0, 2).join(' ');
                             let userName = userNameWithColon.slice(0, -1)
                             let checker = false
-                            getAllUsers().then(getAllUsersRes => {
-                                for (let i = 0; i < getAllUsersRes.members.length; i++) {
-                                    if (getAllUsersRes.members[i].real_name === userName) {
+                            
+                            // if allSlackUsers array is empty (should only occur during first run) then get all slack members
+                            if (allSlackUsers.length === 0) {
+                                getAllSlackUsers.then(res => {
+                                    for (let i = 0; i < allSlackUsers.length; i++) {
+                                        if (allSlackUsers.members[i].real_name === userName) {
+                                            checker = true
+                                            let userEmail = allSlackUsers.members[i].profile.email
+                                            postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                                            })
+                                        }
+                                        else if ((i === allSlackUsers.members.length - 1) && (checker === false)) {
+                                            getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
+                                                userEmail = getUserRes.user.profile.email
+                
+                                                // post ticket to Zendesk
+                                                postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                                                    
+                                                })
+                                            })
+                                        }
+                                    }
+                                })
+                            }
+
+                            // if all users array is not empty
+                            else {
+                                for (let i = 0; i < allSlackUsers.length; i++) {
+                                    if (allSlackUsers.members[i].real_name === userName) {
                                         checker = true
-                                        let userEmail = getAllUsersRes.members[i].profile.email
+                                        let userEmail = allSlackUsers.members[i].profile.email
                                         postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
                                         })
                                     }
-                                    // if no results found, set Jake Bowen as assignee
-                                    else if ((i === getAllUsersRes.members.length - 1) && (checker === false)) {
-                                        getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
-                                            userEmail = getUserRes.user.profile.email
-            
-                                            // post ticket to Zendesk
-                                            postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
-                                                
-                                            })
+
+                                    // if not able to find a result, recreate the Slack users array. This is if there's a new user of the Slack WS. If that doesnt help, then set Jake Bowen as assignee
+                                    else if ((i === allSlackUsers.members.length - 1) && (checker === false)) {
+                                       getAllSlackUsers()
+                                       getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
+                                        userEmail = getUserRes.user.profile.email
+        
+                                        // post ticket to Zendesk
+                                        postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                                            
                                         })
+                                    })
                                     }
                                 }
-                            })
+                            }
+
+
+
+                            // getAllUsers().then(getAllUsersRes => {
+                            //     for (let i = 0; i < getAllUsersRes.members.length; i++) {
+                            //         if (getAllUsersRes.members[i].real_name === userName) {
+                            //             checker = true
+                            //             let userEmail = getAllUsersRes.members[i].profile.email
+                            //             postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                            //             })
+                            //         }
+                            //         // if no results found, set Jake Bowen as assignee
+                            //         else if ((i === getAllUsersRes.members.length - 1) && (checker === false)) {
+                            //             getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
+                            //                 userEmail = getUserRes.user.profile.email
+            
+                            //                 // post ticket to Zendesk
+                            //                 postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                                                
+                            //                 })
+                            //             })
+                            //         }
+                            //     }
+                            // })
                         }
 
                         // if post is not a zendesk side convo
@@ -156,6 +211,26 @@ app.post("/combinehook", (req, res) => {
     }
 })
 
+async function getAllSlackUsers() {
+    let getFirstUsers = await getAllUsers("")
+    allSlackUsers = allSlackUsers.concat(getFirstUsers.members)
+    let nextPage = getFirstUsers.response_metadata.next_cursor.replace(/\=/g, "%3D") // each next page includes an equal sign and you must change it to regex. Stupid tbh
+    let pagination = "&cursor=" + nextPage
+    while (pagination != "") {
+        console.log(pagination)
+        let getMoreUsers = await getAllUsers(pagination)
+        allSlackUsers = allSlackUsers.concat(getMoreUsers.members)
+        if (getMoreUsers.response_metadata.next_cursor === "") {
+            pagination = ""
+            console.log('success')
+        }
+        else {
+            nextPage = getMoreUsers.response_metadata.next_cursor.replace(/\=/g, "%3D")
+            pagination = "&cursor=" + nextPage
+        }
+    }
+}
+
 
 async function getMessage(channelId, messageId, token) {
     try {
@@ -197,10 +272,10 @@ async function getUser(userId, token) {
     }
 }
 
-async function getAllUsers() {
+async function getAllUsers(pagination) {
     try {
         let res = await axios({
-            url: `https://slack.com/api/users.list`,
+            url: `https://slack.com/api/users.list?limit=200${pagination}`,
             method: 'get',
             headers: {
                 'Content-Type': 'application/json',
