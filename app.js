@@ -38,6 +38,7 @@ app.post("/hook", (req, res) => {
             let userEmail
             let ticketTitle
             let ticketTags
+            console.log(channelId)
 
             // if channel is Product Questions
             if (channelId === 'CVBJRC17B')  {
@@ -60,6 +61,12 @@ app.post("/hook", (req, res) => {
             // if channel is ts-team
             else if (channelId === 'C015N6P6S9J') {
                 ticketTitle = 'Sr TSS TS Team - Internal'
+                ticketTags = ["no_csat"]
+            }
+
+            // for any other channel
+            else {
+                ticketTitle = 'Sr TSS Other - Internal'
                 ticketTags = ["no_csat"]
             }
 
