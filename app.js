@@ -47,14 +47,11 @@ app.post("/hook", (req, res) => {
                     // get more info about the message the emoji was applied to
                     getMessage(channelId, messageId, process.env.slack_token).then(getMessageRes => {
                         let textConversation = getMessageRes.messages[0].text
-                        console.log(getMessageRes)
-                        console.log(getMessageRes.messages[0])
 
                         // if it's a zendesk post, we need to search through the text for the name of the person who posted it. Then, do list all users in the WS. After that, for loop through the list of all users to find the correct one. From there, pull email address and proceed as normal
                         // if no email address is found, it will simply be assigned to Jake Bowen after recreating the slack user array
                         if (getMessageRes.messages[0].user === 'U02SJ2ZKA4W') {
-                            let userNameWithColon = textConversation.split(' ').slice(0, 2).join(' ');
-                            let userName = userNameWithColon.slice(0, -1)
+                            let userName = textConversation.substring(0, textConversation.indexOf(':')); //get username which is all text before colon
                             let checker = false
                             
                             // if allSlackUsers array is empty (should only occur during first run) then get all slack members
@@ -105,30 +102,6 @@ app.post("/hook", (req, res) => {
                                     }
                                 }
                             }
-
-
-
-                            // getAllUsers().then(getAllUsersRes => {
-                            //     for (let i = 0; i < getAllUsersRes.members.length; i++) {
-                            //         if (getAllUsersRes.members[i].real_name === userName) {
-                            //             checker = true
-                            //             let userEmail = getAllUsersRes.members[i].profile.email
-                            //             postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
-                            //             })
-                            //         }
-                            //         // if no results found, set Jake Bowen as assignee
-                            //         else if ((i === getAllUsersRes.members.length - 1) && (checker === false)) {
-                            //             getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
-                            //                 userEmail = getUserRes.user.profile.email
-            
-                            //                 // post ticket to Zendesk
-                            //                 postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
-                                                
-                            //                 })
-                            //             })
-                            //         }
-                            //     }
-                            // })
                         }
 
                         // if post is not a zendesk side convo
@@ -217,7 +190,6 @@ async function getAllSlackUsers() {
     let nextPage = getFirstUsers.response_metadata.next_cursor.replace(/\=/g, "%3D") // each next page includes an equal sign and you must change it to regex. Stupid tbh
     let pagination = "&cursor=" + nextPage
     while (pagination != "") {
-        console.log(pagination)
         let getMoreUsers = await getAllUsers(pagination)
         allSlackUsers = allSlackUsers.concat(getMoreUsers.members)
         if (getMoreUsers.response_metadata.next_cursor === "") {
