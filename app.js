@@ -148,6 +148,7 @@ app.post("/hook", (req, res) => {
                             else {
                                 // get Email for user who asked question
                                 getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
+                                    console.log('not zendesk')
                                     userEmail = getUserRes.user.profile.email
 
                                     // post ticket to Zendesk
