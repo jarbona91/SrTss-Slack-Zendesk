@@ -42,7 +42,7 @@ app.post("/hook", (req, res) => {
             // if channel is Product Questions
             if (channelId === 'CVBJRC17B')  {
                 ticketTitle = 'Sr TSS Product Questions - Internal'
-                ticketTags = ["no_csat", "product_questions"]
+                ticketTags = ["no_csat"]
             }
 
             // if channel is Bugs
