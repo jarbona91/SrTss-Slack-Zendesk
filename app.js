@@ -27,7 +27,7 @@ app.post("/hook", (req, res) => {
         )
     }
 
-    // checking if webhook includes an event. Then, if the event is the application of the key emoji
+    // checking if webhook includes an event. Then, if the event is the application of the designated emoji
     else if (req.body.event) {
         if (req.body.event.reaction === 'sr-tss-ticket-maker') {
             let channelId = req.body.event.item.channel
@@ -36,6 +36,32 @@ app.post("/hook", (req, res) => {
             let slackURL = `https://click-up.slack.com/archives/${channelId}/p${messageIdURL}`
             let tsEmail
             let userEmail
+            let ticketTitle
+            let ticketTags
+
+            // if channel is Product Questions
+            if (channelId === 'CVBJRC17B')  {
+                ticketTitle = 'Sr TSS Product Questions - Internal'
+                ticketTags = ["no_csat", "product_questions"]
+            }
+
+            // if channel is Bugs
+            else if (channelId === 'C4UCH54FJ') {
+                ticketTitle = 'Sr TSS Bugs Channel - Internal'
+                ticketTags = ["no_csat"]
+            }
+
+            // if channel is zeb-requests
+            else if (channelId === 'C01P7E67TC2') {
+                ticketTitle = 'Sr TSS Zeb Requests - Internal'
+                ticketTags = ["no_csat"]
+            }
+
+            // if channel is ts-team
+            else if (channelId === 'C015N6P6S9J') {
+                ticketTitle = 'Sr TSS TS Team - Internal'
+                ticketTags = ["no_csat"]
+            }
 
             // get Email for TS member who applied emoji
             getUser(req.body.event.user, process.env.slack_token).then(getTsUserRes => {
@@ -69,7 +95,7 @@ app.post("/hook", (req, res) => {
                                                 userEmail = getUserRes.user.profile.email
                 
                                                 // post ticket to Zendesk
-                                                postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                                                postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
                                                     
                                                 })
                                             })
@@ -84,7 +110,7 @@ app.post("/hook", (req, res) => {
                                     if (allSlackUsers[i].real_name === userName) {
                                         checker = true
                                         let userEmail = allSlackUsers[i].profile.email
-                                        postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                                        postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
                                         })
                                     }
 
@@ -95,7 +121,7 @@ app.post("/hook", (req, res) => {
                                         userEmail = getUserRes.user.profile.email
         
                                         // post ticket to Zendesk
-                                        postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                                        postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
                                             
                                         })
                                     })
@@ -111,7 +137,7 @@ app.post("/hook", (req, res) => {
                                 userEmail = getUserRes.user.profile.email
 
                                 // post ticket to Zendesk
-                                postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                                postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
                                     
                                 })
                             })
@@ -142,7 +168,7 @@ app.post("/combinehook", (req, res) => {
         )
     }
 
-    // checking if webhook includes an event. Then, if the event is the application of the key emoji
+    // checking if webhook includes an event. Then, if the event is the application of the designated emoji
     else if (req.body.event) {
         if (req.body.event.reaction === 'white_check_mark') {
             let channelId = req.body.event.item.channel
@@ -264,7 +290,7 @@ async function getAllUsers(pagination) {
     }
 }
 
-async function postTicket(tsEmail, userEmail, textConversation, slackURL) {
+async function postTicket(tsEmail, userEmail, textConversation, slackURL, title, tags) {
     try {
         let res = await axios({
             url: `https://clickup.zendesk.com/api/v2/tickets`,
@@ -280,8 +306,8 @@ async function postTicket(tsEmail, userEmail, textConversation, slackURL) {
                         "public": "false",
                     },
                     "priority": "normal",
-                    "subject": "Sr TSS Slack - Internal",
-                    "tags": ["no_csat"],
+                    "subject": title,
+                    "tags": tags,
                     "status": "open",
                     "assignee_email": tsEmail,
                     "requester": userEmail,
