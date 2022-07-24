@@ -79,6 +79,7 @@ app.post("/hook", (req, res) => {
                     // get more info about the message the emoji was applied to
                     getMessage(channelId, messageId, process.env.slack_token).then(getMessageRes => {
                         let textConversation = "<b>REQUESTER</b> " + getMessageRes.messages[0].text + "<br></br>"
+                        let notEditedTextConversation = getMessageRes.messages[0].text
 
                         // retrieving slack messages made by TS member who applied emoji. Then, adding that to the textConversation variable
                         getMessageThread(channelId, messageId, process.env.slack_token).then(threadedReplies => {
@@ -91,7 +92,7 @@ app.post("/hook", (req, res) => {
                             // if it's a zendesk post, we need to search through the text for the name of the person who posted it. Then, do list all users in the WS. After that, for loop through the list of all users to find the correct one. From there, pull email address and proceed as normal
                             // if no email address is found, it will simply be assigned to Jake Bowen after recreating the slack user array
                             if (getMessageRes.messages[0].user === 'U02SJ2ZKA4W') {
-                                let userName = textConversation.substring(0, textConversation.indexOf(':')); //get username which is all text before colon
+                                let userName = notEditedTextConversation.substring(0, notEditedTextConversation.indexOf(':')); //get username which is all text before colon
                                 let checker = false
 
                                 // if allSlackUsers array is empty (should only occur during first run) then get all slack members
