@@ -40,7 +40,7 @@ app.post("/hook", (req, res) => {
             let ticketTags
 
             // if channel is Product Questions
-            if (channelId === 'CVBJRC17B')  {
+            if (channelId === 'CVBJRC17B') {
                 ticketTitle = 'Sr TSS Product Questions - Internal'
                 ticketTags = ["no_csat"]
             }
@@ -80,23 +80,47 @@ app.post("/hook", (req, res) => {
                     getMessage(channelId, messageId, process.env.slack_token).then(getMessageRes => {
                         let textConversation = getMessageRes.messages[0].text
 
-                        // getMessageThread(channelId, messageId, process.env.slack_token).then(threadedReplies => {
-                        //     console.log(threadedReplies)
-                        // })
+                        // retrieving slack messages made by TS member who applied emoji. Then, adding that to the textConversation variable
+                        getMessageThread(channelId, messageId, process.env.slack_token).then(threadedReplies => {
+                            console.log(threadedReplies.messages)
+                            for (let p = 0; p < threadedReplies.messages.length; p++) {
+                                if (threadedReplies.messages[p].user === req.body.event.user) {
+                                    textConversation = textConversation + "<br></br>" + threadedReplies.messages[p].text
+                                }
+                            }
 
-                        let threadedReplies = await getMessageThread(channelId, messageId, process.env.slack_token)
-                        console.log(threadedReplies)
+                            // if it's a zendesk post, we need to search through the text for the name of the person who posted it. Then, do list all users in the WS. After that, for loop through the list of all users to find the correct one. From there, pull email address and proceed as normal
+                            // if no email address is found, it will simply be assigned to Jake Bowen after recreating the slack user array
+                            if (getMessageRes.messages[0].user === 'U02SJ2ZKA4W') {
+                                let userName = textConversation.substring(0, textConversation.indexOf(':')); //get username which is all text before colon
+                                let checker = false
 
+                                // if allSlackUsers array is empty (should only occur during first run) then get all slack members
+                                if (allSlackUsers.length === 0) {
+                                    getAllSlackUsers().then(res => {
+                                        for (let i = 0; i < allSlackUsers.length; i++) {
+                                            if (allSlackUsers[i].real_name === userName) {
+                                                checker = true
+                                                let userEmail = allSlackUsers[i].profile.email
+                                                postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
+                                                })
+                                            }
+                                            else if ((i === allSlackUsers.length - 1) && (checker === false)) {
+                                                getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
+                                                    userEmail = getUserRes.user.profile.email
 
-                        // if it's a zendesk post, we need to search through the text for the name of the person who posted it. Then, do list all users in the WS. After that, for loop through the list of all users to find the correct one. From there, pull email address and proceed as normal
-                        // if no email address is found, it will simply be assigned to Jake Bowen after recreating the slack user array
-                        if (getMessageRes.messages[0].user === 'U02SJ2ZKA4W') {
-                            let userName = textConversation.substring(0, textConversation.indexOf(':')); //get username which is all text before colon
-                            let checker = false
-                            
-                            // if allSlackUsers array is empty (should only occur during first run) then get all slack members
-                            if (allSlackUsers.length === 0) {
-                                getAllSlackUsers().then(res => {
+                                                    // post ticket to Zendesk
+                                                    postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
+
+                                                    })
+                                                })
+                                            }
+                                        }
+                                    })
+                                }
+
+                                // if all users array is not empty
+                                else {
                                     for (let i = 0; i < allSlackUsers.length; i++) {
                                         if (allSlackUsers[i].real_name === userName) {
                                             checker = true
@@ -104,58 +128,36 @@ app.post("/hook", (req, res) => {
                                             postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
                                             })
                                         }
+
+                                        // if not able to find a result, recreate the Slack users array. This is if there's a new user of the Slack WS. If that doesnt help, then set Jake Bowen as assignee
                                         else if ((i === allSlackUsers.length - 1) && (checker === false)) {
+                                            getAllSlackUsers()
                                             getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
                                                 userEmail = getUserRes.user.profile.email
-                
+
                                                 // post ticket to Zendesk
                                                 postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
-                                                    
+
                                                 })
                                             })
                                         }
                                     }
-                                })
-                            }
-
-                            // if all users array is not empty
-                            else {
-                                for (let i = 0; i < allSlackUsers.length; i++) {
-                                    if (allSlackUsers[i].real_name === userName) {
-                                        checker = true
-                                        let userEmail = allSlackUsers[i].profile.email
-                                        postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
-                                        })
-                                    }
-
-                                    // if not able to find a result, recreate the Slack users array. This is if there's a new user of the Slack WS. If that doesnt help, then set Jake Bowen as assignee
-                                    else if ((i === allSlackUsers.length - 1) && (checker === false)) {
-                                       getAllSlackUsers()
-                                       getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
-                                        userEmail = getUserRes.user.profile.email
-        
-                                        // post ticket to Zendesk
-                                        postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
-                                            
-                                        })
-                                    })
-                                    }
                                 }
                             }
-                        }
 
-                        // if post is not a zendesk side convo
-                        else {
-                            // get Email for user who asked question
-                            getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
-                                userEmail = getUserRes.user.profile.email
+                            // if post is not a zendesk side convo
+                            else {
+                                // get Email for user who asked question
+                                getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
+                                    userEmail = getUserRes.user.profile.email
 
-                                // post ticket to Zendesk
-                                postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
-                                    
+                                    // post ticket to Zendesk
+                                    postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
+
+                                    })
                                 })
-                            })
-                        }
+                            }
+                        })
                     })
                 }
             })
@@ -211,7 +213,7 @@ app.post("/combinehook", (req, res) => {
 
                             // post ticket to Zendesk
                             postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
-                                
+
                             })
                         })
                     })
@@ -338,7 +340,7 @@ async function postTicket(tsEmail, userEmail, textConversation, slackURL, ticket
             data: {
                 "ticket": {
                     "comment": {
-                        "body": textConversation + " " + slackURL,
+                        "html_body": textConversation + " " + slackURL,
                         "public": "false",
                     },
                     "priority": "normal",
