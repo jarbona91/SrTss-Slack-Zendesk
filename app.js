@@ -79,9 +79,12 @@ app.post("/hook", (req, res) => {
                     // get more info about the message the emoji was applied to
                     getMessage(channelId, messageId, process.env.slack_token).then(getMessageRes => {
                         let textConversation = getMessageRes.messages[0].text
-                        getMessageThread(channelId, messageId, process.env.slack_token).then(threadedReplies => {
-                            console.log(threadedReplies)
-                        })
+                        console.log(getMessageRes.messages)
+
+
+                        // getMessageThread(channelId, messageId, process.env.slack_token).then(threadedReplies => {
+                        //     console.log(threadedReplies)
+                        // })
 
                         // if it's a zendesk post, we need to search through the text for the name of the person who posted it. Then, do list all users in the WS. After that, for loop through the list of all users to find the correct one. From there, pull email address and proceed as normal
                         // if no email address is found, it will simply be assigned to Jake Bowen after recreating the slack user array
@@ -264,7 +267,7 @@ async function getMessage(channelId, messageId, token) {
 async function getMessageThread(channelId, messageId, token) {
     try {
         let res = await axios({
-            url: `https://slack.com/api/conversations.replies?channel=${channelId}&latest=${messageId}&limit=1&inclusive=true`,
+            url: `https://slack.com/api/conversations.replies?channel=${channelId}&ts=${messageId}`,
             method: 'get',
             headers: {
                 'Content-Type': 'application/json',
