@@ -81,12 +81,12 @@ app.post("/hook", (req, res) => {
                         let textConversation = "<b>REQUESTER</b> " + getMessageRes.messages[0].text + "<br></br>"
 
                         // retrieving slack messages made by TS member who applied emoji. Then, adding that to the textConversation variable
-                        getMessageThread(channelId, messageId, process.env.slack_token).then(threadedReplies => {
-                            for (let p = 0; p < threadedReplies.messages.length; p++) {
-                                if (threadedReplies.messages[p].user === req.body.event.user) {
-                                    textConversation = textConversation + "<b>YOU</b> " + threadedReplies.messages[p].text + "<br></br>"
-                                }
-                            }
+                        // getMessageThread(channelId, messageId, process.env.slack_token).then(threadedReplies => {
+                        //     for (let p = 0; p < threadedReplies.messages.length; p++) {
+                        //         if (threadedReplies.messages[p].user === req.body.event.user) {
+                        //             textConversation = textConversation + "<b>YOU</b> " + threadedReplies.messages[p].text + "<br></br>"
+                        //         }
+                        //     }
 
                             // if it's a zendesk post, we need to search through the text for the name of the person who posted it. Then, do list all users in the WS. After that, for loop through the list of all users to find the correct one. From there, pull email address and proceed as normal
                             // if no email address is found, it will simply be assigned to Jake Bowen after recreating the slack user array
@@ -148,7 +148,6 @@ app.post("/hook", (req, res) => {
                             else {
                                 // get Email for user who asked question
                                 getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
-                                    console.log('not zendesk')
                                     userEmail = getUserRes.user.profile.email
 
                                     // post ticket to Zendesk
@@ -158,7 +157,7 @@ app.post("/hook", (req, res) => {
                                 })
                             }
                         })
-                    })
+                    // })
                 }
             })
         }
