@@ -78,14 +78,14 @@ app.post("/hook", (req, res) => {
 
                     // get more info about the message the emoji was applied to
                     getMessage(channelId, messageId, process.env.slack_token).then(getMessageRes => {
-                        let textConversation = getMessageRes.messages[0].text
+                        let textConversation = "<b>REQUESTER</b>" + getMessageRes.messages[0].text + "<br></br>"
 
                         // retrieving slack messages made by TS member who applied emoji. Then, adding that to the textConversation variable
                         getMessageThread(channelId, messageId, process.env.slack_token).then(threadedReplies => {
                             console.log(threadedReplies.messages)
                             for (let p = 0; p < threadedReplies.messages.length; p++) {
                                 if (threadedReplies.messages[p].user === req.body.event.user) {
-                                    textConversation = textConversation + "<br></br>" + threadedReplies.messages[p].text
+                                    textConversation = textConversation + "<b>YOU</b>" + threadedReplies.messages[p].text + "<br></br>"
                                 }
                             }
 
