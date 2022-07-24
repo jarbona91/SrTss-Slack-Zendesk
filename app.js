@@ -247,7 +247,7 @@ async function getAllSlackUsers() {
 async function getMessage(channelId, messageId, token) {
     try {
         let res = await axios({
-            url: `https://slack.com/api/conversations.history?channel=${channelId}&latest=${messageId}`,
+            url: `https://slack.com/api/conversations.history?channel=${channelId}&latest=${messageId}&limit=1&inclusive=true`,
             method: 'get',
             headers: {
                 'Content-Type': 'application/json',
