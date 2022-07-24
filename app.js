@@ -79,6 +79,7 @@ app.post("/hook", (req, res) => {
                     // get more info about the message the emoji was applied to
                     getMessage(channelId, messageId, process.env.slack_token).then(getMessageRes => {
                         let textConversation = getMessageRes.messages[0].text
+                        let threadedReplies = getMessageThread(channelId, messageId, process.env.slack_token)
 
                         // if it's a zendesk post, we need to search through the text for the name of the person who posted it. Then, do list all users in the WS. After that, for loop through the list of all users to find the correct one. From there, pull email address and proceed as normal
                         // if no email address is found, it will simply be assigned to Jake Bowen after recreating the slack user array
@@ -183,6 +184,8 @@ app.post("/combinehook", (req, res) => {
             let slackURL = `https://clickupcombine.slack.com/archives/${channelId}/p${messageIdURL}`
             let tsEmail
             let userEmail
+            let ticketTitle = "Sr TSS Combine Channel"
+            let ticketTags = ["no_csat"]
 
             // get Email for TS member who applied emoji
             getUser(req.body.event.user, process.env.combine_slack_token).then(getTsUserRes => {
@@ -200,7 +203,7 @@ app.post("/combinehook", (req, res) => {
                             userEmail = getUserRes.user.profile.email
 
                             // post ticket to Zendesk
-                            postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                            postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
                                 
                             })
                         })
@@ -240,6 +243,26 @@ async function getMessage(channelId, messageId, token) {
     try {
         let res = await axios({
             url: `https://slack.com/api/conversations.history?channel=${channelId}&latest=${messageId}&limit=1&inclusive=true`,
+            method: 'get',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': "Bearer " + token
+            }
+        })
+        if (res.status == 200) {
+            console.log(res.status)
+        }
+        return res.data
+    }
+    catch (err) {
+        console.error(err);
+    }
+}
+
+async function getMessageThread(channelId, messageId, token) {
+    try {
+        let res = await axios({
+            url: `https://slack.com/api/conversations.replies?channel=${channelId}&latest=${messageId}&limit=1&inclusive=true`,
             method: 'get',
             headers: {
                 'Content-Type': 'application/json',
