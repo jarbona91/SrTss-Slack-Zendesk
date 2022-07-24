@@ -206,15 +206,24 @@ app.post("/combinehook", (req, res) => {
 
                     // get more info about the message the emoji was applied to
                     getMessage(channelId, messageId, process.env.combine_slack_token).then(getMessageRes => {
-                        let textConversation = getMessageRes.messages[0].text
+                        let textConversation = "<b>REQUESTER</b> " + getMessageRes.messages[0].text + "<br></br>"
 
-                        // get Email for user who asked question
-                        getUser(getMessageRes.messages[0].user, process.env.combine_slack_token).then(getUserRes => {
-                            userEmail = getUserRes.user.profile.email
+                        // retrieving slack messages made by TS member who applied emoji. Then, adding that to the textConversation variable
+                        getMessageThread(channelId, messageId, process.env.combine_slack_token).then(threadedReplies => {
+                            for (let p = 0; p < threadedReplies.messages.length; p++) {
+                                if (threadedReplies.messages[p].user === req.body.event.user) {
+                                    textConversation = textConversation + "<b>YOU</b> " + threadedReplies.messages[p].text + "<br></br>"
+                                }
+                            }
+                        
+                            // get Email for user who asked question
+                            getUser(getMessageRes.messages[0].user, process.env.combine_slack_token).then(getUserRes => {
+                                userEmail = getUserRes.user.profile.email
 
-                            // post ticket to Zendesk
-                            postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
+                                // post ticket to Zendesk
+                                postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
 
+                                })
                             })
                         })
                     })
