@@ -290,7 +290,7 @@ async function getAllUsers(pagination) {
     }
 }
 
-async function postTicket(tsEmail, userEmail, textConversation, slackURL, title, tags) {
+async function postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags) {
     try {
         let res = await axios({
             url: `https://clickup.zendesk.com/api/v2/tickets`,
@@ -306,8 +306,8 @@ async function postTicket(tsEmail, userEmail, textConversation, slackURL, title,
                         "public": "false",
                     },
                     "priority": "normal",
-                    "subject": title,
-                    "tags": tags,
+                    "subject": ticketTitle,
+                    "tags": ticketTags,
                     "status": "open",
                     "assignee_email": tsEmail,
                     "requester": userEmail,
