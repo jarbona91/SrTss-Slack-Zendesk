@@ -97,7 +97,6 @@ app.post("/hook", (req, res) => {
 
                                 // if allSlackUsers array is empty (should only occur during first run) then get all slack members
                                 if (allSlackUsers.length === 0) {
-                                    console.log(userName)
                                     getAllSlackUsers().then(res => {
                                         for (let i = 0; i < allSlackUsers.length; i++) {
                                             
