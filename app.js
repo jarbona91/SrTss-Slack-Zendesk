@@ -38,7 +38,6 @@ app.post("/hook", (req, res) => {
             let userEmail
             let ticketTitle
             let ticketTags
-            console.log(channelId)
 
             // if channel is Product Questions
             if (channelId === 'CVBJRC17B')  {
@@ -94,7 +93,7 @@ app.post("/hook", (req, res) => {
                                         if (allSlackUsers[i].real_name === userName) {
                                             checker = true
                                             let userEmail = allSlackUsers[i].profile.email
-                                            postTicket(tsEmail, userEmail, textConversation, slackURL).then(postTicketRes => {
+                                            postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
                                             })
                                         }
                                         else if ((i === allSlackUsers.length - 1) && (checker === false)) {
