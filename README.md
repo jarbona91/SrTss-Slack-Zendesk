@@ -49,6 +49,11 @@ The key for the Zendesk token is:
 ```
 zendesk_token
 ```
+
+The key for the CU Combine Zendesk token is:
+```
+combine_slack_token
+```
 Make sure to save! You should then redeploy the application to make sure everything is up to date.
 
 # Setting up the Slack App
@@ -69,6 +74,12 @@ reactions:read
 users:read
 users:read:email
 ```
+Note that there is a separate webhook listener and Slack app set up for the CU Combine Slack Workspace.Please set up the same User Scopes for that App as well. Here is the Request URL for that listener:
+
+```
+https://{your_heroku_app}.herokuapp.com/combinehook
+```
+
 
 # Adding or Removing Sr TSS members
 
