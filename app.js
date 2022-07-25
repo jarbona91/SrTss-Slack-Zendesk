@@ -130,16 +130,27 @@ app.post("/hook", (req, res) => {
                                             })
                                         }
 
-                                        // if not able to find a result, recreate the Slack users array. This is if there's a new user of the Slack WS. If that doesnt help, then set Jake Bowen as assignee
+                                        // if not able to find a result, recreate the Slack users array. This is to account if there's a new user of the Slack WS. If that doesnt help, then set Jake Bowen as assignee
                                         else if ((i === allSlackUsers.length - 1) && (checker === false)) {
-                                            getAllSlackUsers()
-                                            getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
-                                                userEmail = getUserRes.user.profile.email
-
-                                                // post ticket to Zendesk
-                                                postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
-
-                                                })
+                                            getAllSlackUsers().then(getAllSlackUsersRes => {
+                                                let checker2 = false
+                                                for (let b = 0; b < allSlackUsers.length; b++) {
+                                                    if (allSlackUsers[b].real_name === userName) {
+                                                        checker2 = true
+                                                        let userEmail = allSlackUsers[b].profile.email
+                                                        postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
+                                                        })
+                                                    }
+                                                    else if ((b === allSlackUsers.length - 1) && (checker2 === false)) {
+                                                        getUser(getMessageRes.messages[0].user, process.env.slack_token).then(getUserRes => {
+                                                            userEmail = getUserRes.user.profile.email
+        
+                                                            // post ticket to Zendesk
+                                                            postTicket(tsEmail, userEmail, textConversation, slackURL, ticketTitle, ticketTags).then(postTicketRes => {
+                                                            })
+                                                        })
+                                                    }
+                                                }
                                             })
                                         }
                                     }
@@ -241,7 +252,8 @@ app.post("/combinehook", (req, res) => {
 async function getAllSlackUsers() {
     let getFirstUsers = await getAllUsers("")
     allSlackUsers = allSlackUsers.concat(getFirstUsers.members)
-    let nextPage = getFirstUsers.response_metadata.next_cursor.replace(/\=/g, "%3D") // each next page includes an equal sign and you must change it to regex. Stupid tbh
+    // each next page code includes an equal sign and you must change it to regex. Stupid tbh
+    let nextPage = getFirstUsers.response_metadata.next_cursor.replace(/\=/g, "%3D")
     let pagination = "&cursor=" + nextPage
     while (pagination != "") {
         let getMoreUsers = await getAllUsers(pagination)
