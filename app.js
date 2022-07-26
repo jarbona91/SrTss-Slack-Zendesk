@@ -13,7 +13,6 @@ let emailList = ['pvatterott@clickup.com', 'gbarnes@clickup.com', 'ibuthelezi@cl
 // List of all Slack Users. This is used when the Slack post is from a ZD ticket
 let allSlackUsers = []
 
-
 //webhook listener and validator for CU Slack Channel
 app.post("/hook", (req, res) => {
 
@@ -93,7 +92,6 @@ app.post("/hook", (req, res) => {
                             // if no email address is found, it will recreate a new allSlackUser array to check if it's a new user. If that fails, it will create a ticket with Jake Bowen as requester
                             if (getMessageRes.messages[0].user === 'U02SJ2ZKA4W') {
                                 let userName = notEditedTextConversation.substring(0, notEditedTextConversation.indexOf(':')); //get username which is all text before colon
-                                let checker = false
 
                                 // if allSlackUsers array is empty (should only occur during first run) then get all slack members
                                 if (allSlackUsers.length === 0) {
