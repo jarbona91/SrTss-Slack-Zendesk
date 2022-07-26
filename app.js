@@ -8,7 +8,7 @@ app.use(bodyParser.json())
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`))
 
 // List of Sr TSS emails. If adding or removing Sr TSS, do it here
-let emailList = ['pvatterott@clickup.com', 'gbarnes@clickup.com', 'ibuthelezi@clickup.com', 'mwester@clickup.com', 'mmontgomery@clickup.com', 'namaral@clickup.com', 'shaq@clickup.com', 'bhoover@clickup.com', 'rkendig@clickup.com']
+let emailList = ['pvatterott@clickup.com', 'gbarnes@clickup.com', 'ibuthelezi@clickup.com', 'mwester@clickup.com', 'mmontgomery@clickup.com', 'namaral@clickup.com', 'shaq@clickup.com', 'bhoover@clickup.com', 'rkendig@clickup.com', 'mhicks@clickup.com']
 
 // List of all Slack Users. This is used when the Slack post is from a ZD ticket
 let allSlackUsers = []
