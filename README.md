@@ -8,6 +8,10 @@ This app is deployed on Heroku.
 
 ---
 
+## Walkthrough
+
+[Here is a video walkthrough of the code](https://dev-share.clickup.com/clip/s/t333/3060799f-7e93-4d51-a655-df27baef8c62/screen-recording-2022-08-01-16%3A22.webm)
+
 
 ## Built With
 
